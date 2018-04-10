@@ -18,14 +18,18 @@
 
 #include <memory>
 
-#include <openssl/c++/digest.h>
+#include <openssl/asn1.h>
 #include <openssl/crypto.h>
+#include <openssl/digest.h>
 #include <openssl/err.h>
 #include <openssl/md4.h>
 #include <openssl/md5.h>
+#include <openssl/nid.h>
+#include <openssl/obj.h>
 #include <openssl/sha.h>
 
-namespace bssl {
+#include "../internal.h"
+
 
 struct MD {
   // name is the name of the digest.
@@ -139,10 +143,9 @@ static bool CompareDigest(const TestVector *test,
                           const uint8_t *digest,
                           size_t digest_len) {
   static const char kHexTable[] = "0123456789abcdef";
-  size_t i;
   char digest_hex[2*EVP_MAX_MD_SIZE + 1];
 
-  for (i = 0; i < digest_len; i++) {
+  for (size_t i = 0; i < digest_len; i++) {
     digest_hex[2*i] = kHexTable[digest[i] >> 4];
     digest_hex[2*i + 1] = kHexTable[digest[i] & 0xf];
   }
@@ -159,7 +162,7 @@ static bool CompareDigest(const TestVector *test,
 }
 
 static int TestDigest(const TestVector *test) {
-  ScopedEVP_MD_CTX ctx;
+  bssl::ScopedEVP_MD_CTX ctx;
 
   // Test the input provided.
   if (!EVP_DigestInit_ex(ctx.get(), test->md.func(), NULL)) {
@@ -235,19 +238,35 @@ static int TestDigest(const TestVector *test) {
 }
 
 static int TestGetters() {
-  if (EVP_get_digestbyname("RSA-SHA512") == NULL ||
-      EVP_get_digestbyname("sha512WithRSAEncryption") == NULL ||
-      EVP_get_digestbyname("nonsense") != NULL) {
+  if (EVP_get_digestbyname("RSA-SHA512") != EVP_sha512() ||
+      EVP_get_digestbyname("sha512WithRSAEncryption") != EVP_sha512() ||
+      EVP_get_digestbyname("nonsense") != NULL ||
+      EVP_get_digestbyname("SHA512") != EVP_sha512() ||
+      EVP_get_digestbyname("sha512") != EVP_sha512()) {
+    return false;
+  }
+
+  if (EVP_get_digestbynid(NID_sha512) != EVP_sha512() ||
+      EVP_get_digestbynid(NID_sha512WithRSAEncryption) != NULL ||
+      EVP_get_digestbynid(NID_undef) != NULL) {
+    return false;
+  }
+
+  bssl::UniquePtr<ASN1_OBJECT> obj(OBJ_txt2obj("1.3.14.3.2.26", 0));
+  if (!obj ||
+      EVP_get_digestbyobj(obj.get()) != EVP_sha1() ||
+      EVP_get_digestbyobj(OBJ_nid2obj(NID_md5_sha1)) != EVP_md5_sha1() ||
+      EVP_get_digestbyobj(OBJ_nid2obj(NID_sha1)) != EVP_sha1()) {
     return false;
   }
 
   return true;
 }
 
-static int Main() {
+int main() {
   CRYPTO_library_init();
 
-  for (size_t i = 0; i < sizeof(kTestVectors) / sizeof(kTestVectors[0]); i++) {
+  for (size_t i = 0; i < OPENSSL_ARRAY_SIZE(kTestVectors); i++) {
     if (!TestDigest(&kTestVectors[i])) {
       fprintf(stderr, "Test %d failed\n", (int)i);
       return 1;
@@ -260,10 +279,4 @@ static int Main() {
 
   printf("PASS\n");
   return 0;
-}
-
-}  // namespace bssl
-
-int main() {
-  return bssl::Main();
 }

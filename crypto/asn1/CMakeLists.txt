@@ -7,7 +7,6 @@ add_library(
 
   a_bitstr.c
   a_bool.c
-  a_bytes.c
   a_d2i_fp.c
   a_dup.c
   a_enum.c
@@ -36,6 +35,7 @@ add_library(
   tasn_new.c
   tasn_typ.c
   tasn_utl.c
+  time_support.c
   x_bignum.c
   x_long.c
 )
