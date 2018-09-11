@@ -31,7 +31,7 @@
 
 Pod::Spec.new do |s|
   s.name     = 'BoringSSL'
-  version = '9.0'
+  version = '9.1'
   s.version  = version
   s.summary  = 'BoringSSL is a fork of OpenSSL that is designed to meet Google’s needs.'
   # Adapted from the homepage:
@@ -69,11 +69,11 @@ Pod::Spec.new do |s|
 
   s.source = {
     :git => 'https://github.com/mxl123/MyBoringSSL.git',
-    :tag => "9.0",
+    :tag => "9.1",
     # :commit => '4fec04b48406111cb88fdd8d196253adc54f7a31',
   }
 
-  name = 'openssl'
+  name = 'wfOpenssl'
 
   # When creating a dynamic framework, name it openssl.framework instead of BoringSSL.framework.
   # This lets users write their includes like `#include <openssl/ssl.h>` as opposed to `#include
