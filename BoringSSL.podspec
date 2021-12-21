@@ -31,7 +31,7 @@
 
 Pod::Spec.new do |s|
   s.name     = 'BoringSSL'
-  version = '9.1'
+  version = '111.111.111'
   s.version  = version
   s.summary  = 'BoringSSL is a fork of OpenSSL that is designed to meet Google’s needs.'
   # Adapted from the homepage:
@@ -69,11 +69,11 @@ Pod::Spec.new do |s|
 
   s.source = {
     :git => 'https://github.com/mxl123/MyBoringSSL.git',
-    :tag => "9.1",
+    :tag => "9.0",
     # :commit => '4fec04b48406111cb88fdd8d196253adc54f7a31',
   }
 
-  name = 'wfOpenssl'
+  name = 'openssl'
 
   # When creating a dynamic framework, name it openssl.framework instead of BoringSSL.framework.
   # This lets users write their includes like `#include <openssl/ssl.h>` as opposed to `#include
@@ -95,7 +95,7 @@ Pod::Spec.new do |s|
   # The module map and umbrella header created automatically by Cocoapods don't work for C libraries
   # like this one. The following file, and a correct umbrella header, are created on the fly by the
   # `prepare_command` of this pod.
-  s.module_map = 'include/openssl/module.modulemap'
+  s.module_map = 'include/openssl/boringsslcustom.modulemap'
 
   # We don't need to inhibit all warnings; only -Wno-shorten-64-to-32. But Cocoapods' linter doesn't
   # want that for some reason.
@@ -186,7 +186,7 @@ Pod::Spec.new do |s|
       #include "x509.h"
       #include "x509v3.h"
     EOF
-    cat > include/openssl/module.modulemap <<EOF
+    cat > include/openssl/boringsslcustom.modulemap <<EOF
       framework module openssl {
         umbrella header "umbrella.h"
         export *
